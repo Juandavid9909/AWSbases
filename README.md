@@ -76,3 +76,62 @@ Hay varias opciones para crear nuestras máquinas virtuales, a su vez estas tien
 ## Nitro System
 
 Es la plataforma en la que se ejecutan las instancias EC2 de Amazon, es una combinación de hardware dedicado y también hypervisors para que funcionen las máquinas virtuales correctamente, es decir que es algo similar a VMware.
+
+
+## Launch Instance
+
+Cuando estamos creando una instancia EC2 tendremos que seleccionar varias cosas:
+
+### Nombre y tags
+Asignar un nombre y también tags a los que podemos colocar unos resource types para que el tag sea visible en todos ellos.
+
+### AMIs
+Seleccionar una AMI (sistema operativo de la máquina virtual), cada una tiene unos beneficios y ejecutará mejor algunas tareas, importante tenerlo en cuenta. Amazon tiene su propia AMI (Amazon Linux), esta fue desarrollada para aprovechar al máximo el potencial de EC2.
+
+### Tipo de instancia
+Seleccionar el tipo de máquina, aquí se muestran todas las opciones que aparecen en el link de los tipos de instancias
+
+### Key Pair
+Configurar Key Pair, ya que con estas claves nos podremos conectar en remoto. Esto genera un archivo que podremos usar para conectarnos al servidor, por lo tanto, si perdemos el archivo no nos podremos conectar al servidor, por lo que es importante guardar una copia en un lugar seguro.
+
+AWS nos genera un archivo .pem o .ppk, podemos descargar el .pem y luego si requerimos conectarnos con PuTTY se puede convertir este archivo a .ppk.
+
+### Configuración de red
+Debemos configurar la red de nuestra instancia, asociar una VPC, si queremos subredes asignarlas también. Si deseamos que nuestra máquina permita el acceso desde internet tendremos que habilitar la opción de auto asignar una IP pública.
+
+También está la opción grupos de seguridad, los cuales son unos firewall (componentes que tienen una serie de reglas para permitir o impedir el acceso a nuestra instancia). Podemos crear uno nuevo o seleccionar uno existente.
+
+Cada grupo puede tener varias reglas por si necesitamos customizar varios tipos de acceso.
+
+### Almacenamiento
+AWS nos brinda opciones con SSD, HDD y magnetic storage, es importante tener claro lo que requerimos hacer para seleccionar la mejor opción. Aquí también podremos configurar instancias EBS para almacenamiento de ficheros directamente en nuestra máquina virtual.
+
+### Opciones avanzadas
+Se pueden asignar instancias de tipo Spot, podemos configurar cómo debe comportarse la instancia cuando se apaga o la ponemos en modo hibernar.
+
+## Conexiones
+
+### Linux
+```bash
+ssh -i "nuestroArchivo.pem" aws-user@aws-route.compute-1.amazonaws.com
+
+yum update o apt update
+```
+
+### Windows
+Con la aplicación de conexión a un escritorio remoto lo podemos hacer fácilmente.
+
+
+## NAT Gateway
+
+Una subred pública puede usar un Internet Gateway para salir a internet, sin embargo una red privada no tendrá acceso a internet, por lo que se configura un NAT Gateway para poder llegar a internet o VPNs, etc. Una vez configurado el NAT se conecta al Internet Gateway para completar la configuración.
+
+
+## IPs elásticas
+
+Es una IP pública fija, en cambio las IP públicas normales son dinámicas. Son útiles para que una máquina o componente no cambie de IP cada que se apague y encienda. Una IP elástica siempre será necesaria para poder crear el NAT Gateway.
+
+
+## Network interfaces
+
+Son tarjetas de red virtuales, normalmente cuando creamos una instancia EC2 estas ya traen una tarjeta de red. Cada tipo de instancia tiene un máximo de interfaces de redes, es importante tenerlo en cuenta. Esto nos permite tener más de una dirección IP.
