@@ -135,3 +135,99 @@ Es una IP pública fija, en cambio las IP públicas normales son dinámicas. Son
 ## Network interfaces
 
 Son tarjetas de red virtuales, normalmente cuando creamos una instancia EC2 estas ya traen una tarjeta de red. Cada tipo de instancia tiene un máximo de interfaces de redes, es importante tenerlo en cuenta. Esto nos permite tener más de una dirección IP.
+
+
+## EC2 Templates
+
+Son plantillas que podemos crear para crear rápidamente instancias en el futuro. tendremos que colocar un nombre base, una AMI, un tipo de instancia y todo lo que se nos pide como si estuviéramos creando una instancia desde 0, pero ya luego teniendo esta base podremos crear las instancias basadas en esta plantilla para ahorrarnos hacer la configuración nuevamente.
+
+No es necesario diligenciar toda la información, por ejemplo podemos dejar el Key Pair vacío y luego cuando creemos una instancia con nuestra plantilla nos pedirá la información aún faltante.
+
+### Versiones
+AWS nos guarda las versiones que generamos de nuestra plantilla, esto nos permite poner una versión como default para usarla y si requerimos hacer ajustes setear una versión distinta como default.
+
+
+## Instancias SPOT
+
+Básicamente son máquinas que entre comillas le sobran a Amazon y las ofrecen a un precio mucho más económico. En algunas zonas nos ahorra hasta un 70% del valor de una instancia normal. Es importante tener en cuenta que si el algún momento Amazon requiere de este recurso SPOT para utilizarlo como una instancia normal nos darán de baja la máquina.
+
+
+## Saving Plans
+
+### Compute
+Son de procesamiento, y nos dan la mayor flexibilidad para reducir el coste ya que se van a aplicar de forma automática.
+
+### EC2 Instance
+Los planes de ahorro de las instancias EC2 proveen precios más bajos, ofreciendo ahorris de hasta el 72%.
+
+### SageMaker
+Son una serie de productos que se usan para Machine Learning y nos permite tener hasta un 64% de ahorro en estos productos.
+
+
+## Instancias reservadas
+
+Nos sirven si necesitamos una máquina durante X período de tiempo y una cantidad de tiempo al día Amazon nos hará también una especie de ahorro comparado a si fuera una On Demand. Es un precio fijo por mes independientemente de si la instancia es apagada o encendida.
+
+
+## Dedicated Hosts
+
+Es una máquina física que reservo para mí y sobre ella creo instancias EC2. Al alquilarla podremos seleccionar las características mediante la instancia que deseemos, sin embargo es importante tener en cuenta que hay planes On Demand y anuales, y al reservar un Host dedicado por 1 año tendremos descuentos de aproximadamente el 40%.
+
+Una cuenta nueva no puede crear Hosts dedicados por defecto, y hay que hacer la solicitud a Amazon para subir el límite de Hosts dedicados.
+
+
+## Scheduled instances
+
+Son instancias reservadas con planificación, es decir que planeamos usarlas en un período de tiempo o por cierta cantidad de tiempo. Sin embargo, esta opción ya no está disponible, si requerimos una instancia reservada podemos hacer uso de las Capacity Reservations.
+
+
+## Capacity Reservations
+
+Le indicamos a Amazon el período de tiempo y las características de la máquina que deseamos reservar. El período de tiempo puede ser incluso por horas pero hay que tener en cuenta que si reservamos un período de tiempo y una vez iniciado el período de tiempo no tenemos la instancia creada o no la estamos usando Amazon igual generará el cobro.
+
+
+# AWS CLI
+
+Nos permite conectarnos a los servicios de Amazon mediante líneas de comandos. Para conectarnos tendremos que buscar la opción Security Credencials en nuestra cuenta y crear un Access Key. Es importante tener claro que debemos copiar la clave para poder conectarnos porque luego no podremos verla. Para configurar el CLI con las credenciales podremos usar el siguiente comando:
+
+```bash
+aws configure
+
+<Access-Key>
+
+<Access-Secret-Key>
+
+<Codigo-region>
+
+<Output-format(none)>
+```
+
+Y aquí unos comandos que podemos usar con CLI:
+
+| Descripción | Comando |
+|--|--|
+| Listar instancias EC2 | `aws ec2 describe-instances` |
+| Listar VPCs (JSON) | `aws ec2 describe-vpcs` |
+| Listar VPCs con formato YAML | `aws ec2 describe-vpcs --output yaml` |
+| Listar VPCs con formato Text | `aws ec2 describe-vpcs --output text` |
+| Listar VPCs con formato Table | `aws ec2 describe-vpcs --output table` |
+| Listar subredes | `aws ec2 describe-subnets` |
+| Listar subred filtrando por id | `aws ec2 describe-subnets --subnet-ids <subnet-id>` |
+| Listar subred con varios filtros | `aws ec2 describe-subnets --filters "Name=<nombre-filtro>, Values=<valor-filtro>" "Name=<nombre-filtro2>, Values=<valor-filtro2>"` |
+| Listar instancias EC2 | `aws ec2 describe-instances` |
+| Listar subredes y guardar el resultado en un archivo | `aws ec2 describe-subnets > <nombre-archivo>.<extension-archivo>` |
+| Pintar todos los campos que estén dentro de Subnets | `aws ec2 describe-subnets --query 'Subnets[*]'` |
+| Pintar la subred 1 | `aws ec2 describe-subnets --query 'Subnets[0]'` |
+| Pintar ciertas posiciones de subredes | `aws ec2 describe-subnets --query 'Subnets[1:3]'` |
+| Pintar de todas las subredes la propiedad AvailabilityZone | `aws ec2 describe-subnets --query 'Subnets[*].AvailabilityZone'` |
+| Pintar las VPCs y renombrar propiedades | `aws ec2 describe-vpcs --query 'Vpcs[].[VpcId,{Estado:State},{"VPC por defecto": IsDefault}]'` |
+| Crear instancia EC2 | `aws ec2 run-instances --image-id <ami-id> --count <cantidad-instancias> --instance-type <tipo-instancia> --key-name <nombre-key-pair> --security-groups <nombre-grupo-seguridad>` |
+| Listar instancias EC2 (filtros opcionales) | `aws ec2 describe-instances --filters "Name:instance-type, Values=t3.micro"` |
+| Detener una instancia | `aws ec2 stop-instances --instance-ids <id-instancia>` |
+| Encender una instancia | `aws ec2 start-instances --instance-ids <id-instancia>` |
+| Terminar una instancia | `aws ec2 terminate-instances --instance-ids <id-instancia>` |
+
+
+## Cloud Shell
+
+Es una terminal en la nube que nos brinda Amazon, con esto nos ahorramos la configuración de Amazon CLI, tiene pre instalado el CLI, Python, NodeJS entre otros. Tiene 1GB de almacenamiento por región y guarda los archivos para futuros usos necesarios.
