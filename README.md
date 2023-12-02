@@ -186,23 +186,7 @@ Son instancias reservadas con planificación, es decir que planeamos usarlas en 
 Le indicamos a Amazon el período de tiempo y las características de la máquina que deseamos reservar. El período de tiempo puede ser incluso por horas pero hay que tener en cuenta que si reservamos un período de tiempo y una vez iniciado el período de tiempo no tenemos la instancia creada o no la estamos usando Amazon igual generará el cobro.
 
 
-# AWS CLI
-
-Nos permite conectarnos a los servicios de Amazon mediante líneas de comandos. Para conectarnos tendremos que buscar la opción Security Credencials en nuestra cuenta y crear un Access Key. Es importante tener claro que debemos copiar la clave para poder conectarnos porque luego no podremos verla. Para configurar el CLI con las credenciales podremos usar el siguiente comando:
-
-```bash
-aws configure
-
-<Access-Key>
-
-<Access-Secret-Key>
-
-<Codigo-region>
-
-<Output-format(none)>
-```
-
-Y aquí unos comandos que podemos usar con CLI:
+## AWS CLI EC2
 
 | Descripción | Comando |
 |--|--|
@@ -226,6 +210,169 @@ Y aquí unos comandos que podemos usar con CLI:
 | Detener una instancia | `aws ec2 stop-instances --instance-ids <id-instancia>` |
 | Encender una instancia | `aws ec2 start-instances --instance-ids <id-instancia>` |
 | Terminar una instancia | `aws ec2 terminate-instances --instance-ids <id-instancia>` |
+
+
+## AMIs
+
+Como se mencionó en una sección anterior, son los sistemas operativos que usamos para nuestras instancias EC2, hay unas que Amazon ya nos da creadas por defecto, sin embargo también hay un Marketplace para mirar más opciones que no necesariamente son imágenes de AWS. Por otra parte también podremos crear nuestra propia plantilla de AMI por si queremos que nuestro sistema operativo ya tenga cosas instaladas por defecto.
+
+Para crear nuestra AMI personalizada primero tendremos que tener un grupo de seguridad disponible, si no lo tenemos creado es necesario crearlo y configurar las reglas de acceso para continuar. Luego podremos darle en Launch Instance, seleccionamos el tipo de instancia, nuestra VPC, subredes, etc (importante que el grupo de seguridad que ajustamos esté dentro de la VPC). Al terminar de configurar y crear nuestro servidor actualizamos el kernel, repositorios, paquetes, y también instalamos las cosas que requeriremos. A continuación un ejemplo de una AMI con Apache preinstalado:
+
+```bash
+sudo yum update
+
+sudo yum install httpd
+
+sudo systemctl enable httpd
+
+sudo systemctl start httpd
+
+sudo systemctl status httpd
+
+sudo yum install git
+```
+
+Una vez hemos terminado de configurar esta instancia vamos al dashboard de AWS y miramos nuestras instancias EC2, la seleccionamos, hacemos clic en Actions y en la opción Image and templates seleccionamos la opción Create image. Diligenciamos todos los datos de configuración y la creamos. Ya en este momento si vamos a la opción AMIs ya quedará creada nuestra imagen para usarla y crear una instancia On Demand o una instancia Spot.
+
+### Ejemplos con AWS CLI para AMIs
+| Descripción | Comando |
+|--|--|
+| Listar imágenes EC2 creadas por nosotros | `aws ec2 describe-images --owner self` |
+| Listar nombre de las imágenes creadas por nosotros | `aws ec2 describe-images --owner self --query 'Images[].Name'` |
+
+Si queremos crear nuestra imagen usando AWS CLI podemos ejecutar los siguientes comandos:
+
+```bash
+// Listar el ID de nuestras instancias
+aws ec2 describe-instances --query 'Reservations[].Instances[].InstanceId'
+
+// Crear imagen
+aws ec2 create-image --instance-id <id-instancia> --name <nombre-imagen>
+```
+
+
+## AWS EBS (Elastic Block Store)
+
+Es un disco virtual asociado a nuestra instancia, lo podemos usar para guardar archivos localmente en nuestra instancia. Cuando creamos una instancia y configuramos los Tags AWS nos pregunta si queremos asociar dichos Tags a los Volúmenes (el Storage de nuestro servidor), si seleccionamos la opción AWS le asignará el mismo Tag en este caso a nuestro volumen.
+
+A pesar de que ya nuestra instancia tiene un volumen asociado podremos crear más en caso de ser necesario, para hacerlo vamos a la opción Volumes y damos clic en Create volume, y diligenciamos todos los datos, es importante que el disco esté en la misma zona de nuestra instancia.
+
+Una vez el volumen ha sido creado tenemos que asociarlo a nuestra instancia, para hacerlo seleccionamos el volumen, hacemos clic en Actions y en Attach volume, aquí podremos seleccionar la instancia a la que queremos asociar nuestro volumen y también nos dará una guía para asociarle un nombre al dispositivo, hecho todo esto ya nuestro volumen estará asociado a la instancia.
+
+Luego ya teniendo montado nuestro volumen si queremos particionarlo podremos ejecutar los siguientes comandos:
+
+```bash
+// Ver si el disco tiene particiones (/dev/sdh es el nombre que asignamos cuando asociamos el volumen a nuestra instancia)
+fdisk /dev/sdh
+
+(Colocamos n para indicar que es una partición nueva)
+n
+
+// Primaria
+p
+
+// Número de partición
+1
+
+// Primer sector y último sector
+
+w
+```
+
+A pesar de ya tener todo esto no podremos usarlo aún, para terminar de configurarlo tendremos que usar:
+
+```bash
+mkfs
+
+// sdh1 es nuestra partición
+sudo mkfs.xfs /dev/sdh1
+
+sudo mkdir /disco2
+
+// Montar la partición en disco2
+sudo mount /dev/sdh1 /disco2
+```
+
+### Snapshot en un volumen EBS
+Es una foto que se saca de algo en un momento determinado, un backup, en este caso de nuestro volumen EBS. Para crear el Snapshot vamos a la opción Volumes, seleccionamos nuestro volumen, damos en Actions y Create snapshot, colocamos los datos que nos pide AWS y creamos el backup.
+
+Podremos crear volúmenes usando nuestros Snapshots, para hacerlo vamos a la opción Snapshots, seleccionamos nuestro backup y le damos en Actions y Create volume from snapshot, verificamos y actualizamos los datos en caso de ser necesario y le damos en crear. Una vez creados ya podremos asociarlos a nuestra instancia.
+
+Para borrar un Snapshot podemos borrar la instancia directamente (es importante en la configuración cuando se crea indicarle que si se borra la instancia borre también nuestros volúmenes asociados a la misma) o también desasociar el volumen de nuestra instancia y luego borrarlo. El Snapshot toca borrarlo manualmente en cualquiera de los 2 casos ya que son una copia de disco.
+
+## Ejemplos con AWS CLI para EBS
+
+| Descripción | Comando |
+|--|--|
+| Listar nuestros volúmenes | `aws ec2 describe-volumes` |
+| Listar los ids e instances ids de nuestros volúmenes | `aws ec2 describe-volumes --query 'Volumes[].[VolumeId,Attachments[].InstanceId]'` |
+| Crear volumen | `aws ec2 create-volume --availability-zone <codigo-zona-disponibilidad> --size <tamaño-disco> --volume-type <tipo-volumen>` |
+| Asociar volumen a una instancia | `aws ec2 attach-volume --volume-id <id-volumen> --instance-id <id-instancia> --device <nombre-/dev/sdh>` |
+| Desasociar volumen de instancia | `aws ec2 detach-volume --volume-id <id-volumen>` |
+
+
+## AWS EFS (Elastic File System)
+
+Es el sistema NFS que permite que las instancias EC2 puedan utilizar almacenamiento compartido de tipo NFS. Hay 2 tipos, Standard y One Zone, los Standard van a almacenar los ficheros en 2 AZ, y el One Zone almacena todos los datos en un AZ. Estos EFS pueden ser compartidos entre varias instancias.
+
+Para crear un sistema de ficheros es importante tener un grupo de seguridad y poner disponible el puerto correspondiente, el puerto debe ser el NFS y también podemos colocar una segunda regla para todo el tráfico. Es importante brindar acceso al puerto 2049 para poder usar el EFS.
+
+Para crearla tendremos que asociar nuestra EFS a una VPC. Una vez creada seleccionamos nuestro EFS y damos en Attach, lo podemos montar vía DNS o vía IP, copiamos la línea de comando y accedemos a nuestra instancia, creamos una carpeta y luego pegamos nuestro comando. A continuación un ejemplo:
+
+```bash
+mkdir /disco-nfs
+
+sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport <direccion-ip>:/ /disco-nfs
+```
+
+### Opciones avanzadas
+Cuando creamos un NFS podemos acceder a configuraciones avanzadas, entre estas podemos deshabilitar los backups automáticos (vienen activados por defecto). Podemos hacer un movimiento automático de los archivos que no han sido accedidos en x período de tiempo (configuramos dicho tiempo) a el lugar para los archivos con infrequent access.
+
+Hecho todo esto podremos configurar el acceso de red, asociando una zona de disponibilidad.
+
+Después el File System Policy para prevenir el root access por defecto, prevenir el acceso anónimo, entre otras opciones.
+
+
+## AWS FSx
+
+AWS EFS sólo funciona en entornos Linux, si lo necesitamos para Windows FSx es nuestra alternativa ya que este sí funciona tanto para Linux como para Windows, tienen 4 alternativas para seleccionar. Al momento de crearla nos pedirá el nombre, el tipo de almacenamiento (SSD o HDD), la cantidad de MB/s/TIB, nos pedirá la VPC que usaremos, también pide los puertos TCP 988 y 1021-1023. Podremos activar o desactivar los backups y con qué recurrencia queremos que lo haga.
+
+Una vez creado también tendremos que hacer el Attach al igual que hicimos con AWS EFS:
+
+```bash
+usame -r
+
+sudo amazon-linux-extras install -y lustre2.10
+
+sudo mkdir /datos-fsx
+
+sudo mount -t lustre -o noatime,flock <url-instancia>:/<id> /datos-fsx
+```
+
+
+## Ejemplos con AWS CLI para FSx
+
+| Descripción | Comando |
+|--|--|
+| Listar FSx creadas | `aws fsx describe-file-systems` |
+| Crear backup | `aws fsx create-backup --file-system-id <id-fsx>` |
+
+
+# AWS CLI
+
+Nos permite conectarnos a los servicios de Amazon mediante líneas de comandos. Para conectarnos tendremos que buscar la opción Security Credencials en nuestra cuenta y crear un Access Key. Es importante tener claro que debemos copiar la clave para poder conectarnos porque luego no podremos verla. Para configurar el CLI con las credenciales podremos usar el siguiente comando:
+
+```bash
+aws configure
+
+<Access-Key>
+
+<Access-Secret-Key>
+
+<Codigo-region>
+
+<Output-format(none)>
+```
 
 
 ## Cloud Shell
