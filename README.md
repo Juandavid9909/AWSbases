@@ -518,3 +518,47 @@ Para que los objetos sean públicos tendremos que configurar las políticas de a
 	]
 }
 ```
+
+### ACL
+Es para que varios usuarios (no sólo el dueño del Bucket) puedan ser propietarios de los registros, teniendo esta opción activada podremos configurar los permisos de lectura y escritura para los usuarios.
+
+
+## Legal hold
+
+Nos permite configurar que los objetos no van a puedan ser borrados ni desbloqueados, mientras esta opción esté activa no se podrá hacer ninguna de las acciones mencionadas anteriormente, es decir que si queremos borrar uno de los objetos tendremos que desactivar esta opción.
+
+
+## Lock Retention
+
+Los objetos estarán bloqueados hasta una fecha que nosotros modificamos, y hay 2 modos, el Governance mode donde los usuarios con los permisos correspondientes en IAM podrán borrar los objetos incluso donde el período de retención, pero si seleccionamos la segunda opción que es Compliance mode nadie, absolutamente nadie, ni siquiera el usuario root podrá borrar los objetos antes de que finalice el período de retención.
+
+
+## S3 Browser
+
+Es una herramienta de un tercero para acceder a S3, sin embargo siempre es recomendable usar todo directamente en AWS para conectarnos. Aún así si queremos conectarnos nos va a pedir nuestras credenciales de acceso y podremos ver todos los tipos de recursos de S3 que tengamos.
+
+
+## Website estático con S3
+
+Cuando creamos un un Bucket tendremos la posibilidad de crearlo con un hosting de un sitio estático, nos pedirá el nombre del archivo index y un archivo para redirigir cuando hayan errores de acceso. Es importante dejar el acceso público para poder acceder a nuestro sitio estático sin problemas. Una vez configuramos todo AWS nos entregará una URL para acceder a nuestro sitio web.
+
+
+## Ejemplos con AWS CLI para S3
+
+| Descripción | Comando |
+|--|--|
+| Listar buckets | `aws s3 ls` |
+| Crear bucket | `aws s3 mb s3://<nombre-bucket-nuevo>` |
+| Copiar fichero local a bucket | `aws s3 cp <archivo-con-extension> s3://<bucket-destino>` |
+| Eliminar objeto en bucket | `aws s3 rm s3://<ruta-hasta-archivo>` |
+
+
+## Ejemplos con AWS CLI para S3 con S3Api
+
+| Descripción | Comando |
+|--|--|
+| Listar buckets | `aws s3api list-buckets` |
+| Crear bucket | `aws s3api create-bucket --bucket <nombre-bucket> --region <codigo-region> --create-bucket-configuration LocationConstraint=<codigo-region-otra-vez>` |
+| Copiar fichero local a bucket | `aws s3api put-object --bucket <nombre-bucket> --key <nombre-fichero> --body <archivo-local>` |
+| Listar objetos | `aws s3api list-objects --bucket <nombre-bucket>` |
+
