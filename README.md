@@ -63,6 +63,28 @@ Para que una subred tenga acceso a internet podemos usar Internet Gateway, la cu
 Para que una subred sea pública se configura el Internet Gateway, esta provee una IP elástica (nos permite tener una IP fija por si la máquina se reinicia) y permitirá la conexión a internet desde nuestra VPC bien sea de entrada o salida. Para hacer esto es indispensable configurar una tabla de rutas ya que las VPCs heredan la Main Route Table, es necesario modificar esta Routes Table para que el Gateway apunte a ellas.
 
 
+# AWS CLI
+
+Nos permite conectarnos a los servicios de Amazon mediante líneas de comandos. Para conectarnos tendremos que buscar la opción Security Credencials en nuestra cuenta y crear un Access Key. Es importante tener claro que debemos copiar la clave para poder conectarnos porque luego no podremos verla. Para configurar el CLI con las credenciales podremos usar el siguiente comando:
+
+```bash
+aws configure
+
+<Access-Key>
+
+<Access-Secret-Key>
+
+<Codigo-region>
+
+<Output-format(none)>
+```
+
+
+## Cloud Shell
+
+Es una terminal en la nube que nos brinda Amazon, con esto nos ahorramos la configuración de Amazon CLI, tiene pre instalado el CLI, Python, NodeJS entre otros. Tiene 1GB de almacenamiento por región y guarda los archivos para futuros usos necesarios.
+
+
 # EC2
 
 Es el entorno de máquinas virtuales que podemos usar en **AWS**. Se utiliza para bases de datos, inteligencia artificial, entre otras cosas.
@@ -358,23 +380,141 @@ sudo mount -t lustre -o noatime,flock <url-instancia>:/<id> /datos-fsx
 | Crear backup | `aws fsx create-backup --file-system-id <id-fsx>` |
 
 
-# AWS CLI
+## Load Balancers
 
-Nos permite conectarnos a los servicios de Amazon mediante líneas de comandos. Para conectarnos tendremos que buscar la opción Security Credencials en nuestra cuenta y crear un Access Key. Es importante tener claro que debemos copiar la clave para poder conectarnos porque luego no podremos verla. Para configurar el CLI con las credenciales podremos usar el siguiente comando:
+Nos permiten liberar la carga que recibe una instancia cuando se accede a la misma, básicamente redirigiendo los usuarios a los diferentes servidores. Para configurar el balanceador de carga requeriremos varias instancias clon (las que requerimos).
 
-```bash
-aws configure
+Actualmente hay 3 tipos de balanceadores de carga:
 
-<Access-Key>
+- **ALB (Application Load Balancer:** Está muy pensado para trabajar con entornos HTTP, que pueden ir a instancias, Fargates o funciones Lambda. Excelente para nuestras aplicaciones web.
+- **NLB (Network Load Balancer):** Usan TCP, UDP y TLS, e conectan a instancias y también a balanceadores de carga ALB. Buena opción para bases de datos.
+- **GWLB (Gateway Load Balancer):** Trabaja con appliances que soportan GENEVE.
 
-<Access-Secret-Key>
+Para crear un balanceador de carga requeriremos varias subredes (al menos 2 subredes dónde balancear porque si tenemos problemas en una subred tendremos la otra). Para hacerlo vamos a la sección de VPCs y creamos nuestras subredes en distintas AZ.
 
-<Codigo-region>
+Luego necesitaremos un Target Group, el cual es un conjunto de elementos sobre los que se va a realizar el balanceo de carga. Cuando lo estamos creando nos preguntará el tipo de target (instancias, dirección ip, función lambda y Application Load Balancer), el nombre, el protocolo y puerto, la VPC con la que trabajaremos, la versión de protocolo y podremos configurar el Health check para validar el funcionamiento de nuestro balanceador de carga. Una vez hemos diligenciado toda esta información seleccionamos nuestros recursos, en este caso las instancias y colocamos el puerto.
 
-<Output-format(none)>
+Teniendo todo esto configurado ya podremos crear nuestro balanceador de carga, nos pedirá que seleccionemos el tipo de balanceador, el nombre, si tendrá peticiones internas o peticiones internet, el mapeo de red (seleccionar VPC y AZs) donde nos pedirá al menos 2 AZs con una subred por zona, el grupo de seguridad, etc.
+
+Cuando tenemos creado nuestro balanceador podemos agregar reglas para algunos paths específicos que podemos configurar, bien sea para enviar una respuesta fija o redirigir a otro lugar.
+
+### Ejemplo AWS CLI con Load Balancers
+| Descripción | Comando |
+|--|--|
+| Listar balanceadores de carga | `aws elbv2 describe-load-balancers` |
+| Listar target groups | `aws elbv2 describe-target-groups` |
+| Listar target groups health | `aws elbv2 describe-target-health --target-group-arn <target-group-arn>` |
+| Listar listener | `aws elbv2 describe-listeners --load-balancer-arn <regla-arn>` |
+| Listar regla | `aws elbv2 describe-rules --listener-arn <listener-arn>` |
+| Borrar regla | `aws elbv2 delete-rule --rule-arn <regla-arn>` |
+| Borrar balanceador | `aws elbv2 delete-load-balancer --load-balancer-arn <balanceador-arn>` |
+| Borrar target group | `aws elbv2 delete-target-group --target-group-arn <target-group-arn>` |
+
+
+## EC2 Auto Scaling
+
+Son un conjunto de instancias EC2 que podrán escalar hacia arriba o hacia abajo dependiendo de ciertas características, por ejemplo cuando se excede cierto porcentaje de CPU o cuando se disparen x alarmas. Se coloca el tamaño mínimo, el deseado y el nivel máximo.
+
+Para crear un grupo de autoescalada se nos solicitará un Launch template, cuando creamos un Launch template hay un check que nos dice si queremos habilitar las recomendaciones de AWS para configurar adecuadamente el Launch template preparándola para el grupo de autoescalada.
+
+Par acrear el grupo primero debemos seleccionar nuestra Launch template, luego la configuración de red donde seleccionaremos nuestra VPC y nuestras AZs, luego configuraremos los balanceadores de carga (son opcionales), luego el tamaño del grupo (capacidad mínima, deseada y máxima de instancias) y las políticas de escalada, habilitar las notificaciones si sucede algo, seleccionar los tags y finalizaremos el formulario.
+
+### Políticas de escalada SIMPLE y STEP
+El simple es el más sencillo, y va muy conectado con CloudWatch, es decir que si se excede una de nuestras alarmas podemos realizar cosas automáticamente en nuestro grupo de escalada
+
+Las de STEP nos permiten colocar rangos y también va muy conectada con CloudWatch, por ejemplo podríamos colocar una regla para subir una unidad de capacidad cuando hayan entre 2 y 5 conexiones de bases de datos.
+
+
+# S3
+
+Es un sistema de almacenamiento de archivos y ficheros, S3 significa Simple Storage Service, y es una de las infraestructuras más utilizadas ya que nos sirven para backups, tener componentes que nos permitan desplegar entornos web, guardar snapshots, etc.
+
+S3 brinda acceso desde internet a nuestros ficheros, bien sea por terceros, por otras aplicaciones o nuestros usuarios.
+
+
+## Buckets
+
+Es donde se almacena toda la información de los archivos, además S3 es global, es decir que no tenemos que seleccionar una AZ, aquí quedarán de forma global para todas las AZs que necesitemos.
+
+Para crear un Bucker tendremos que diligenciar un formulario, donde se nos pide el nombre (tiene que ser un nombre único en todo AWS), la región para el bucket, el Object Ownership que controla el si eres propietario (usuario de AWS) de los ficheros que se montan en nuestro Bucket (puede ir deshabilitado), los tipos de permisos (por ejemplo bloquear todo el acceso público), versionar el Bucket y si queremos encriptar nuestros objetos que se guardan dentro del Bucket.
+
+Podemos crear la estructura de carpetas para nuestro Bucket, seleccionando nuestro Bucket, sección Objects y Create folder.
+
+Cada objeto tiene un Key el cual se compone de la ruta jerárquica y el nombre del objeto, un Object URL para acceder al archivo, el S3 URI, el ARN y ETag.
+
+
+## Clases de almacenamiento
+
+Hay varios tipos de almacenamiento que podemos usar en nuestros Buckets:
+
+- Standard que nos permite subir y consultar ficheros de forma habitual (más de una vez al mes),.
+- Intelligent Tiering si no sabemos qué patrón de cambios tendremos para nuestro contenido, con esta opción AWS se encarga de forma inteligente cómo manipular los ficheros.
+- Standard-IA para los que no son frecuentemente accedidos pero se requiere un acceso rápido.
+- One Zone-IA es igual a la anterior pero no tiene copia ya que sólo estará en una AZ, es decir que si se pierde el registro no tendremos la copia de seguridad.
+- Glacier Instant Retrieval para ficheros que guardaremos por mucho tiempo, no son muy accedidos y se requiere un acceso rápido.
+- Glacier Flexible Retrieval para archivos que guardaremos por mucho tiempo, poco accedidos y que no nos importa si la consulta tarda minutos o años.
+- Glacier Deep Archive, archivos guardados por mucho tiempo accedidos por 1 vez al año y con retorno de horas.
+
+
+## Intelligent Tiering
+
+Nos permite mover el contenido de forma automática dependiendo de su tipo de acceso. Los mueve a la capa de almacenamiento más rentable para optimizar los costos. Hay 5 capas en las que pueden estar nuestros objetos:
+
+1. Frequent Access tie para contenido habitual.
+2. Infrequent Access tie para los archivos a los que no se accede por más de 30 días.
+3. Archive Instant Access tier si no se accede por más de 90 días.
+4. Archive Access tier si no se accede por más de 90 días, esta se activa de forma manual, es decir que por defecto se movería a la 3 después de 90 días, si se activa se salta la mismo para mover el objeto a la 4.
+5. Deep Archive Access tier para archivos no accedidos por más de 180 días, también es manual.
+
+Las automáticas vienen activadas por AWS y tienen una latencia de respuesta muy eficiente, mientras que las manuales pueden tardar la 4 de 3 a 5 horas y la 5 12 horas.
+
+
+## Ciclo de vida de un contenido
+
+Podemos crear reglas que van a gobernar el ciclo de vida de uno o varios componentes. Se puede especificar un límite, por path, especificar el tamaño mínimo y máximo y qué queremos hacer con el objeto si se cumple nuestra regla, borrar el versionamiento, mover la versión actual a entre las clases de almacenamiento, etc.
+
+
+## Replica de contenido
+
+Si queremos enviar el contenido de un Bucket a otro lo podremos hacer con la copia de Bucket, pero es importante tener en cuenta que la configuración debe ser igual en el Bucker origen y el Bucket destino, es decir que si nuestro Bucket origen tiene versionamiento activado y el Bucket destino no AWS no nos dejará hacer la réplica.
+
+
+## Acceso público
+
+En la configuración de nuestro Bucket podemos bloquear todo el acceso público a nuestros elementos y para ver/descargar los archivos podíamos activar una URL compartida por x período de tiempo, sin embargo si queremos habilitar el acceso público directamente a nuestros objetos podemos hacerlo sin ningún inconveniente.
+
+Para que los objetos sean públicos tendremos que configurar las políticas de acceso y el ACL.
+
+### Ejemplo de política de seguridad
+
+- **Action:** Acciones que se quieren permitir o denegar.
+- **Resource:** Recurso al que se aplica el permiso.
+- **Condition:** Condición que se aplica a la política.
+- **Principal:** Usuario, rol o cuenta para el que debería aplicarse la política.
+
+```json
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "LeerS3",
+			"Effect": "Allow",
+			"Action": [
+				"s3:GetObject",
+				"s3:ListBucketVersions",
+				"s3:ListBucket",
+				"s3:GetObjectVersion"
+			],
+			"Resource": "arn:aws:s3:::mi-bucket/*",
+			"Condition": {
+				"IpAddress": {
+					"aws:SourceIp": "10.0.0.0/16"
+				}
+			},
+			"Principal": {
+				"AWS": ["*"]
+			}
+		}
+	]
+}
 ```
-
-
-## Cloud Shell
-
-Es una terminal en la nube que nos brinda Amazon, con esto nos ahorramos la configuración de Amazon CLI, tiene pre instalado el CLI, Python, NodeJS entre otros. Tiene 1GB de almacenamiento por región y guarda los archivos para futuros usos necesarios.
