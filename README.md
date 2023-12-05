@@ -710,3 +710,5 @@ Puede configurarse uno o varios destinatarios para nuestros mensajes. Cuando se 
 # Grupo de Recursos y editor de Tags
 
 Nos permite agrupar recursos dentro de nuestra infraestructura con un determinado nombre y también poner tags de forma mucho más flexible.
+
+Es muy útil para darle un mejor orden a nuestros recursos de AWS. Podemos crear grupos basados en queries de tags o en AWS CloudFormation stack.
