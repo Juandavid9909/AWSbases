@@ -636,3 +636,48 @@ Aurora también nos brinda la opción de crear una base de datos global, aunque 
 ## Query Editor
 
 Sólo podemos conectarnos a bases de datos de tipo Serverless y podemos ejecutar los comandos que necesitemos. Para hacer todo esto necesitaremos tener activada la opción Data API en nuestra base de datos.
+
+
+## RDS - Backup y Mantenimiento
+
+El backup se puede configurar para que se haga cada x período de tiempo y nos mostrará el backup más reciente que podremos usar para restaurar si lo necesitamos.
+
+Podemos restaurar, eliminar, y copiar un snapshot, lo que nos permite copiarlo es que podemos llevar la copia a una AZ distinta.
+
+También teniendo un snapshot podemos recuperar hasta un momento en el tiempo, podemos indicar la fecha y hora en la que queremos que AWS haga la creación de la base de datos nueva con ese versionado.
+
+En la sección de mantenimiento podemos también configurar actualizaciones de nuestra base de datos.
+
+
+## RDS - Migración de Bases de Datos
+
+Se puede realizar la migración de bases de datos desde entornos On-Premise (desde nuestra infraestructura) a Amazon, o al revés, o también desde otros productos Amazon. También se puede hacer una migración de un motor a otro, si la migración es sencilla puedo hacerla sin ninguna otra configuración, si no es el caso podemos usar la herramienta SCT (Schema Conversion Tool) para hacer la migración más específica entre motores, por ejemplo de MySQL a PostgreSQL.
+
+Para hacer la migración desde nuestra máquina a AWS, RDS necesitará acceso a nuestra máquina. Para hacer esto podremos hacer uso de una instancia EC2 para usarla como el origen. Teniendo nuestra instancia instalamos el motor y versión de base de datos que tenemos.
+
+```bash
+sudo amazon-linux-extras install mariadb10.5
+
+systemctl status mariadb
+
+sudo systemctl start mariadb
+
+sudo systemctl enable mariadb
+
+// Copiar archivos entre nuestra máquina y la instancia EC2
+pscp -i nuestroArchivo.ppk *.sql ec2-user@<ip>:/tmp
+```
+
+También necesitaremos un usuario que tenga los privilegios para realizar la migración:
+
+```sql
+CREATE USER 'dms'@'%' IDENTIFIED BY 'dms';
+
+GRANT ALL ON base_datos.* TO 'dms'@'%';
+```
+
+Hay que crear el endpoint destino (Target) donde tendremos que colocar las VPC que usaremos, la Replication instance, etc. Y para el endpoint origen (Source), le colocamos el nombre, descripción, el motor, el tipo de acceso, la VPC y la Replication instance.
+
+Hecho esto podemos crear una Migration Task, nos pedirá el modo de migración, la preparación para el endpoint destino, activar la validación, habilitar los logs en CloudWatch, el mapeo de tablas con Wizard o JSON, las reglas de selección bien sea para incluir o excluir tablas, y también las reglas de transformación.
+
+Con SCT podremos hacer la migración en motores de bases de datos que AWS no puede migrar directamente, y necesitaremos tener los drivers de nuestros motores para que SCT pueda ejecutar la migración correctamente. Debemos agregar también el source y el target, realizamos la conexión con los datos que configuramos y AWS nos provee y ya cargará nuestras bases de datos con toda su estructura, creamos una regla de transformación parecido a como lo hacíamos con la Migration Task de AWS. Luego en la opción Main View podremos ver todo el Schema en nuestras bases de datos. Ya teniendo todo configurado podemos crear una DMS Task, colocamos la información y se nos generará el JSON Mapping e iniciará el proceso, al igual que nos aparecerá también en nuestras Migration tasks.
