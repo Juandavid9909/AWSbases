@@ -681,3 +681,8 @@ Hay que crear el endpoint destino (Target) donde tendremos que colocar las VPC q
 Hecho esto podemos crear una Migration Task, nos pedirá el modo de migración, la preparación para el endpoint destino, activar la validación, habilitar los logs en CloudWatch, el mapeo de tablas con Wizard o JSON, las reglas de selección bien sea para incluir o excluir tablas, y también las reglas de transformación.
 
 Con SCT podremos hacer la migración en motores de bases de datos que AWS no puede migrar directamente, y necesitaremos tener los drivers de nuestros motores para que SCT pueda ejecutar la migración correctamente. Debemos agregar también el source y el target, realizamos la conexión con los datos que configuramos y AWS nos provee y ya cargará nuestras bases de datos con toda su estructura, creamos una regla de transformación parecido a como lo hacíamos con la Migration Task de AWS. Luego en la opción Main View podremos ver todo el Schema en nuestras bases de datos. Ya teniendo todo configurado podemos crear una DMS Task, colocamos la información y se nos generará el JSON Mapping e iniciará el proceso, al igual que nos aparecerá también en nuestras Migration tasks.
+
+
+# Calculadora de precios
+
+Nos permite hacer el calculo de costos de los productos, por ejemplo en una instancia EC2 seleccionando el sistema operativo Linux, con una cantidad específica de RAM y vCPUs, el uso que se le hará a la máquina, la estrategia de facturación y si usaremos EBS la calculadora hará todo el cálculo estimado por mes.
