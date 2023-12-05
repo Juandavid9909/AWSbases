@@ -562,3 +562,77 @@ Cuando creamos un un Bucket tendremos la posibilidad de crearlo con un hosting d
 | Copiar fichero local a bucket | `aws s3api put-object --bucket <nombre-bucket> --key <nombre-fichero> --body <archivo-local>` |
 | Listar objetos | `aws s3api list-objects --bucket <nombre-bucket>` |
 
+
+# RDS - Bases de Datos Relacionales
+
+Tienen muchas variedades, desde base de datos SQL, no SQL y warehouse:
+
+- **RDS (relacionales):** Oracle, PostgreSQL, MariaDB, SQL Server, MySQL.
+- **Aurora (relacional pero específicamente para cloud):** MySQL y PostgreSQL, muy enfocada a Cloud, es decir que soporta Serverless.
+- **Redshift (warehouse):** Es una base de datos que permite manejar grandes cantidades de información, para analítica, etc.
+- **DynamoDB (NoSQL):** Es no relacional.
+- **In-Memory (NoSQL):** Tiene ElasticCache y MemoryDB for Redis, son las 2 alternativas que tenemos. MemoryDB es una base de datos completa y funcional, y ElasticCache es un servicio de caché que normalmente necesita por debajo una base de datos tradicional.
+- **DocumentDB (compatible con MongoDB):** Es compatible con MongoDB para clusteres de Mongo.
+- **Graph:** Es parecido a NEO for Java, es muy orientada a redes sociales, etc.
+- **Columnar:** Es compatible con Apache Cassandra.
+- **Time series:** Nos permite recorrer datos temporales de forma masiva.
+- **Ledger:** QLDB, es una base de datos para contabilidad, es decir que tiene datos inmutables.
+
+Amazon se encarga de la gestión de la máquina, es decir que es un PaaS (Platform as a Service). Es decir que nosotros sólo nos preocupamos por el consumo de datos, etc mientras que Amazon gestiona la máquina, nosotros no configuramos actualizaciones, etc.
+
+Cuando estamos creando una base de datos Amazon nos pregunta si queremos hacerlo de la forma fácil o la estándar. La diferencia es que la forma fácil diligencia por defecto algunos campos. Hecho esto podremos seleccionar el tipo de base de datos (Amazon Aurora, MySQL, MariaDB, PostreSQL, Oracle y SQL Server) y seleccionar qué versión, también nos preguntará por el entorno de la base de datos. Después nos preguntará por el nombre de usuario y su contraseña, el tipo de máquina/instancia que alojará nuestra base de datos (importante tener en cuenta las instancias que son especializadas en bases de datos), la sección de almacenamiento nos preguntará por el tipo de disco, si queremos que se haga el autoescalado por si nos quedamos sin gigas, tendremos que seleccionar nuestro AZ, seleccionar la VPC para la conectividad, si la base de datos será pública, asociar el grupo de seguridad, el puerto por el que será accedida nuestra base de datos, si queremos activar los backups en nuestra base de datos, la opción de activar la protección para eliminación de la base de datos.
+
+
+## Subnet Groups
+
+Son un conjunto de redes que vamos a poder asociar a una base de datos para que esa base de datos utilice esas subredes. Al momento de crearlo tendremos que asociar la VPC, las AZ y las subredes que vamos a asociar a nuestro grupo.
+
+
+## Parameter Groups
+
+Me permiten crear una configuración para la base de datos. Para crearla tenemos que colocar la base de datos, el nombre el parameter group y la descripción. Una vez creada entramos en los detalles y podemos configurar los parámetros. Hay parámetros que podemos seleccionar y otros que no nos son permitidos.
+
+
+## Option Groups
+
+Son opciones paramétricas, al crear una base de datos tambien nos genera un Option Group por defecto. Para crear una debemos colocar el nombre de nuestro Option Group, la descripción, la base de datos y su versión. Una vez creada también ingresamos a los detalles de nuestro Option Group y agregamos opciones.
+
+
+## Read Replica
+
+Nos permite crear réplicas de una base de datos, puede ser de múltiples AZs, la región de destino puede ser en otra región. Es parecido al maestro esclavo donde se hace la réplica automática de una base de datos en otra, sólo que en este caso sería en la nube.
+
+Al promover una Read Replica esta dejará de ser una réplica y será una base de datos común y corriente.
+
+
+## Instancias RDS Reservadas
+
+Al igual que con las instancias EC2, son instancias que duren entre 1 y 3 años con un ahorro de precio (período de tiempo obligatorio entre 1 y 3 años).
+
+
+## Ejemplos con AWS CLI para RDS
+
+| Descripción | Comando |
+|--|--|
+| Crear una base de datos RDS MySQL | `aws rds create-db-instance --db-instance-identifier <nombre-instancia> --db-instance-class <tipo-instancia> --engine mysql --master-username <nombre-usuario> --master-user-password <password-usuario> --allocated-storage <gigas-almacenamiento>` |
+| Listar instancias | `aws rds describe-db-instances --query DBInstances[].DBInstanceIdentifier` |
+| Crear un snapshot de la base de datos | `aws rds create-db-snapshot --db-instance-identifier <nombre-instancia> --db-snapshot-identifier <nombre-snapshot>` |
+| Listar snapshots | `aws rds describe-db-snapshots` |
+| Borrar snapshot | `aws rds delete-db-snapshot --db-snapshot-identifier <nombre-snapshot>` |
+| Borrar base de datos | `aws rds delete-db-instance --db-instance-identifier <nombre-instancia> --skip-final-snapshot` |
+
+
+## RDS Aurora
+
+Es una versión de Amazon de 2 bases de datos, MySQL y PostgreSQL. Puede trabajar de 2 formas, como un servidor normal o en un entorno Serverless donde indicas un mínimo y un máximo de recursos para trabajar para que nuestra base de datos escale de forma automática.
+
+Aquí también se pueden agregar los reader que son las réplicas de lectura en nuestra base de datos.
+
+También podemos crear réplicas autoscalling, bien sea configurando las métricas por CPU o conexiones a las réplicas Aurora.
+
+Aurora también nos brinda la opción de crear una base de datos global, aunque tiene ciertas limitaciones: Sólo está en ciertas regiones, requiere unas configuraciones muy específicas, soporta unas versiones de los proveedores de Bases de Datos específicas, no soporta algunas de las opciones que brinda Aurora.
+
+
+## Query Editor
+
+Sólo podemos conectarnos a bases de datos de tipo Serverless y podemos ejecutar los comandos que necesitemos. Para hacer todo esto necesitaremos tener activada la opción Data API en nuestra base de datos.
