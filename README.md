@@ -686,3 +686,27 @@ Con SCT podremos hacer la migración en motores de bases de datos que AWS no pue
 # Calculadora de precios
 
 Nos permite hacer el calculo de costos de los productos, por ejemplo en una instancia EC2 seleccionando el sistema operativo Linux, con una cantidad específica de RAM y vCPUs, el uso que se le hará a la máquina, la estrategia de facturación y si usaremos EBS la calculadora hará todo el cálculo estimado por mes.
+
+
+# SNS - Simple Notification Service
+
+Es un servicio que nos permite publicar y suscribirnos a los mensajes que generarán los distintos componentes y recursos de Amazon. Por ejemplo podemos recibir un SMS cuando una Base de Datos se pare.  Puede enviarse a funciones Lambda, HTTP/s, Amazon SQS, Push notifications, SMS y también email.
+
+Puede configurarse uno o varios destinatarios para nuestros mensajes. Cuando se crean pueden ser tipo Queue (FIFO) y hace uso de SQS o estándar el cuál permite utilizar no sólo SQS, también podremos usar Lambda, HTTP, SMS, email y mobile applications endpoint. También podremos configurar una política de acceso.
+
+
+## Ejemplos con AWS CLI para SNS
+
+| Descripción | Comando |
+|--|--|
+| Listar topics | `aws sns list-topics` |
+| Listar suscripciones | `aws sns list-subscriptions` |
+| Crear topic | `aws sns create-topics --name <nombre-topic>` |
+| Crear suscripción | `aws sns subscribe --topic-arn <topic-arn> --protocol <protocolo-ejemplo-email> --notification-endpoint <destinatario>` |
+| Eliminar suscripción | `aws sns unsubscribe --subscription-arn <arn-suscripcion>` |
+| Eliminar topic | `aws sns delete-topic --topic-arn <arn-topic>` |
+
+
+# Grupo de Recursos y editor de Tags
+
+Nos permite agrupar recursos dentro de nuestra infraestructura con un determinado nombre y también poner tags de forma mucho más flexible.
