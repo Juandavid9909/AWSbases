@@ -762,3 +762,45 @@ systemctl status amazon-cloudwatch-agent.service
 ```
 
 Con todo esto en las métricas de CloudWatch ya nos aparecerá nuestro agente y la métrica de nuestra instancia EC2.
+
+
+## Alarmas
+
+Son muy útiles para ser notificados cuando ocurra algún evento que nosotros podemos configurar. Una alarma puede tener el estado In alarm, Insufficient data y OK. Están basadas en métricas y condiciones que son evaluadas constantemente, y valida si pasa o no pasa dichas cosas para disparar la alarma.
+
+Para configurar las alarmas de CPU en nuestras instancias EC2 podemos hacer lo siguiente:
+
+```bash
+sudo amazon-linux-extras install epel
+
+// Para instalar un paquete que nos ayude a subir el consumo de nuestra CPU
+sudo yum install stress
+
+stress -c 5
+```
+
+Ya en la sección de alarmas de CloudWatch podemos podemos configurar y monitorear nuestro dashboard.
+
+También podemos configurar SNS para recibir mensajes de CloudWatch en nuestros dispositivos.
+
+
+## Logs
+
+Es un componente que nos permite almacenar y acceder a los ficheros de log generados por instancias EC2, CloudTrail, Route 53 y otras fuentes y servicios de AWS. A continuación unos conceptos de logs en CloudWatch
+
+- **Log Events:** Un Log Event es un registro de alguna actividad que ha guardado una aplicación o el recurso que se está monitorizando. Contiene 2 propiedades: Timestamp de cuándo se produjo el evento y el mensaje del evento sin procesar.
+- **Log Streams:** Es una secuencia de Log Events que comparten el mismo origen. Representar la secuencia de eventos procedente de una aplicación o recurso.
+- **Log Groups:** Grupo de Log Streams que comparten las mismas características. Cada Log Stream pertenece a un Log Group.
+- **Metric Filters:** Permiten extraer observaciones y datos.
+
+Para configurar nuestras instancias EC2 para recoger los datos de logs podemos hacer lo siguiente:
+
+```bash
+cd /opt/aws/amazon-cloudwatch-agent
+
+// Ajustar nuestro archivo JSON
+vi config.json
+
+// Ver logs
+cd /var/log/httpd
+```
