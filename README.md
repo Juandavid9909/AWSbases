@@ -712,3 +712,53 @@ Puede configurarse uno o varios destinatarios para nuestros mensajes. Cuando se 
 Nos permite agrupar recursos dentro de nuestra infraestructura con un determinado nombre y también poner tags de forma mucho más flexible.
 
 Es muy útil para darle un mejor orden a nuestros recursos de AWS. Podemos crear grupos basados en queries de tags o en AWS CloudFormation stack.
+
+
+# CloudWatch
+
+Nos permiten ver métricas, de comprobar logs, establecer alarmas, todo basado en eventos. Con todas estas métricas y logs podemos crear nuestros propios dashboards para ver como va nuestra infraestructura y ver errores.
+
+Es importante tener claros 2 conceptos básicos:
+
+- **Namespaces:** Son contenedores para métricas de CloudWatch. Las métricas en distintos espacios de nombres están aisladas entre sí, de forma que las métricas de distintas aplicaciones no estén acumuladas por error en las mismas estadísticas. Los espacios de nombres de AWS utilizan la nomenclatura AWS/service.
+- **Métricas:** Una métrica representa una serie de DataPoints ordenados temporalmente que se publican en CloudWatch. Una métrica es una variable que hay que monitorizar y los DataPoints son los valores de esa variable a lo largo del tiempo. Por ejemplo, el uso de la CPU de una forma determinada instancia EC2 es una métrica que Amazon EC2 proporciona.
+- **Units:** Cada estadística tiene una unidad de medida. Entre las unidades de ejemplo se incluyen Bytes, Seconds, Count y Percent.
+- **Aggregation:** Amazon CloudWatch acumula estadísticas de acuerdo con la duración del período que especifique al recuperar las estadísticas.
+- **Percentiles:** Un percentil indica el peso relativo de un valor en un conjunto de datos. Por ejemplo, el percentil 95 significa que el 95% ed los datos está por debajo de este valor y el 5% de los datos está por encima del mismo. Los percentiles le ayudan a entender mejor la distribución de los datos de métricas. Los percentiles se suelen utilizar para aislar anomalía.
+- **Alarms:** Una alarma vigila una única métrica durante el período especificado y realiza una o varias acciones especificadas según el valor de la métrica relativo a un determinado umbral durante un período de tiempo. La acción es una notificación que se envía a un tema de Amazon SNS o a una política de Auto Scaling.
+
+Amazon dispone de un conjunto de métricas básica para sus servicios de forma gratuita, estas son la básica con frecuencia de 5 minutos, la detallada con frecuencia de 1 minuto (se cobra aparte) y las personalizadas que pueden llegar a una frecuencia de 1 segundo. Importante tener en cuenta que las métricas son específicas de una región.
+
+Si queremos asociar un agente de CloudWatch a una instancia (por ejemplo una EC2) esto se hace directamente en nuestra instancia. Primero debemos descargar nuestro agente CloudWatch:
+
+```bash
+sudo yum install amazon-cloudwatch-agent
+```
+
+Esto nos instalará una serie de scripts que podemos usar para ejecutar. Hecho esto tendremos que configurar un archivo JSON donde indicaremos qué metricas queremos que se envíen a CloudWatch. Para generar el archivo base JSON podemos hacer lo siguiente:
+
+```bash
+cd /opt/aws/amazon-cloudwatch-agent/
+
+cd bin
+
+./amazon-cloudwatch-agent-config-wizard
+```
+
+Aquí se nos preguntarán unas cosas, como el sistema operativo de nuestra instancia, si estamos utilizando EC2 o un host On-Premise, el usuario con el que planeamos correr el agente, si queremos encender el StatsD daemon, el puerto del mismo, el intérvalo, si queremos el monitor de métricas desde CollectD, si queremos algún host metric, si queremos la métrica de CPU por núcleo, entre otras cosas. Finalizado todo esto se nos generará el archivo JSON con todos los parámetros de la información que diligenciamos.
+
+También tendremos que crear un rol para nuestro agente en nuestra instancia EC2, lo creamos en AWS IAM donde podemos asociar el grupo de permisos. Seleccionamos que es un AWS Service de tipo EC2, seleccionamos la política CloudWatchAgentServerPolicy para que la instancia pueda llamar CloudWatch en nuestro nombre. Creado nuestro rol en la sección de nuestras instancias EC2 seleccionamos la instancia que estamos configurando, damos en acciones, seguridad y modificar role IAM, seleccionamos el que creamos y ya nuestra instancia tendrá los permisos correctos para ejecutar CloudWatch.
+
+Teniendo todo lo anterior correctamente configurado sólo nos faltaría iniciar y probar nuestro agente:
+
+```bash
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:<ruta-archivo-json-generado>
+
+// Si no encuentra collectd
+sudo amazon-linux-extras install collectd
+
+// Verificar estado de nuestro agente
+systemctl status amazon-cloudwatch-agent.service
+```
+
+Con todo esto en las métricas de CloudWatch ya nos aparecerá nuestro agente y la métrica de nuestra instancia EC2.
