@@ -909,3 +909,23 @@ v1 = s3.Object("bucket-prueba", "fichero")
 print(v1.content_length)
 print(v1.content_type)
 ```
+
+
+# DocumentDB
+
+NoSQL es una evolución del sistema clásico de bases de datos relacionales cuya principal característica es que no se requiere una definición inicial de las estructuras sobre las que se almacenarán los datos. Evolución del modelo entidad-relación para el soporte de estructuras variables en el tiempo. MongoDB es una base de datos NoSQL orientada a documentos.
+
+- **Características:**
+	- Flexibilidad de los modelos.
+	- Alto rendimiento, alta disponibilidad.
+	- Escalabilidad.
+	- Etc...
+- **El modelo de documentos se basa en el estándar JSON/BSON.**
+- **BSON es una serialización binaria del JSON.**
+- **Características de BSON:**
+	- Permite tener documentos dentro de documentos.
+	- Podemos definir arrays dentro de documentos.
+
+En DocumentDB podemos tener hasta 15 réplicas de lectura, es decir que tenemos un Cluster endpoint que tenddrá los permisos de escritura tanto en el mismo cluster como en los Reader endpoints que vendrían siendo nuestras Instance réplica.
+
+Cuando estamos configurando los clusters en nuestras bases de datos podemos usar la función faillover para convertir la instancia primaria como una instancia de réplica y la instancia de réplica a la que le hicimos el faillover en nuestra instancia primaria.
