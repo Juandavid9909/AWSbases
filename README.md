@@ -1001,3 +1001,20 @@ sudo chmod +x /usr/local/bin/lightsailctl
 
 aws lightsail push-container-image --region us-west-2 --service-name nginx --label mi-nginx --image apasoft/lightsail
 ```
+
+
+## Elastic Beanstalk
+
+Son componentes que nos permiten desplegar aplicaciones en Tomcat, Node, Python, Java sin tener que decirle "necesito esta instancia, este balanceador de carga, este grupo de seguridad" ya que cuenta con un asistente que nos facilita toda esta configuración.
+
+Reduce la complejidad de la administración sin restringir la libertad de elección ni el control.
+
+Sólo tiene que cargar la aplicación y Elastic Beanstalk gestionará de manera automática los detalles de aprovisionamiento de capacidad, balanceo de carga, escalado y monitorización de estado de la aplicación.
+
+Elastic Beanstalk es compatible con aplicaciones desarrolladas en Go, Java, .NET, Node.js, PHP, Python y Ruby.
+
+Cuando implementa su aplicación, Elastic Beanstalk crea la versión de la plataforma compatible seleccionada y aprovisiona uno o varios recursos de AWS, como instancias de Amazon EC2, para ejecutar la aplicación.
+
+Para utilizar Elastic Beanstalk, hay que crear una aplicación, cargar una versión de la aplicación como un paquete de código fuente (por ejemplo, un archivo Java.war) en Elastic Beanstalk y proporcionar cierta información sobre la aplicación.
+
+Elastic Beanstalk lanza automáticamente un entorno y crea y configura los recursos de AWS necesarios para ejecutar el código.
