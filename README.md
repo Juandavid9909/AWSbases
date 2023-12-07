@@ -929,3 +929,12 @@ NoSQL es una evolución del sistema clásico de bases de datos relacionales cuya
 En DocumentDB podemos tener hasta 15 réplicas de lectura, es decir que tenemos un Cluster endpoint que tenddrá los permisos de escritura tanto en el mismo cluster como en los Reader endpoints que vendrían siendo nuestras Instance réplica.
 
 Cuando estamos configurando los clusters en nuestras bases de datos podemos usar la función faillover para convertir la instancia primaria como una instancia de réplica y la instancia de réplica a la que le hicimos el faillover en nuestra instancia primaria.
+
+
+# CloudFormation
+
+Es una herramienta que nos permite modelizar y provisionar la infraestructura que queramos crear en Cloud. Se crean plantillas para poder crear infraestructura deseada.
+
+Para configurar esta plantilla podemos usar las Stacks de CloudFormation. Cuando se borra un Stack automáticamente CloudFormation borra todos los componentes asociados a la misma, es importante tenerlo en cuenta. Cada Stack tiene una plantilla asociada que es un JSON que contiene toda la información de los recursos que queremos.
+
+Para crear el Stack necesitaremos una plantilla o podemos usar el Designer para crearla al mismo tiempo. AWS nos brinda algunas plantillas base que podemos usar para crear nuestra Stack, y pueden ser Simple o Multi AZ Simple. Si falla nuestra Stack podemos configurar que haga un rollback total (borrado total) o que mantenga los recursos provisionados correctamente.
