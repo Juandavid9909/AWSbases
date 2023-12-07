@@ -940,3 +940,64 @@ Para configurar esta plantilla podemos usar las Stacks de CloudFormation. Cuando
 Para crear el Stack necesitaremos una plantilla o podemos usar el Designer para crearla al mismo tiempo. AWS nos brinda algunas plantillas base que podemos usar para crear nuestra Stack, y pueden ser Simple o Multi AZ Simple. Si falla nuestra Stack podemos configurar que haga un rollback total (borrado total) o que mantenga los recursos provisionados correctamente.
 
 También tenemos los Drifts que pertenecen a una Stack, y lo que nos permite es detectar si se han cambiado cambias posteriormente a cuando se creó el Stack.
+
+
+# Compute
+
+- **AWS App Runner:** Permite desplegar desde código fuente o desde un contenedor en un entorno escalable, orientado a contenedores.
+- **Batch:** Procesa cargas de trabajo en modo batch dentro de la nube de AWS.
+- **EC2:** Máquinas virtuales.
+- **EC2 Image Builder:** Constructor de AMIs.
+- **Elastic Beanstalk:** Implementar y administrar aplicaciones dentro de la nube de AWS sin tener que preocuparse por la infraestructura que las ejecuta.
+- **Lambda:** Permite ejecutar código en un entorno serverless.
+- **Lightsail:** Entorno destinado a usuarios con menos nivel técnico donde pueden crear instancias, contenedores, bases de datos, redes, etc.
+- **Outpost:** Permite ejecutar servicios AWS en entornos On-Premise.
+
+
+## Lightsail
+
+Lightsail tiene instancias, contenedores, bases de datos, redes, almacenamiento y snapshots. También cuenta con la facilidad de migrar Lightsail a EC2. La creación de instancias es muy parecida a las de EC2, sin embargo al Lightsail ser una opción mucho más sencilla para personas que no tengan un conocimiento tan técnico limita un poco la configuración que podemos hacer.
+
+Si queremos desplegar nuestro contenedor de Docker en Lightsail podemos hacer lo siguiente:
+
+```bash
+mkdir lightsail
+
+cd lightsail/
+
+vi Dockerfile
+```
+
+Dentro del Dockerfile podemos colocar lo siguiente:
+
+```yaml
+##Descargamos una versión concreta de UBUNTU, a través del tag
+FROM ubuntu
+MAINTAINER Apasoft Formacion "apasoft.formacion@gmail.com"
+##Actualizamos el sistema
+RUN apt-get update
+##Instalamos nginx
+RUN apt-get install -y nginx
+##Creamos un fichero index.html en el directorio por defecto de nginx
+RUN echo 'Mi primer Dockerfile' > /var/www/html/index.html
+##Arrancamos NGINX a través de ENTRYPOINT para que no pueda ser ##modificar en la creación del contenedor
+ENTRYPOINT ["/usr/sbin/nginx", "-g", "daemon off;"]
+##Exponemos el Puerto 80
+EXPOSE 80
+```
+
+Luego construimos nuestra imagen:
+
+```docker
+docker build -t apasoft/lightsail .
+```
+
+Luego lo subimos a Lightsail:
+
+```bash
+curl "https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl" -o "/usr/local/bin/lightsailctl"
+
+sudo chmod +x /usr/local/bin/lightsailctl
+
+aws lightsail push-container-image --region us-west-2 --service-name nginx --label mi-nginx --image apasoft/lightsail
+```
