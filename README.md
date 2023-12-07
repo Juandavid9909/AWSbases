@@ -1018,3 +1018,16 @@ Cuando implementa su aplicación, Elastic Beanstalk crea la versión de la plata
 Para utilizar Elastic Beanstalk, hay que crear una aplicación, cargar una versión de la aplicación como un paquete de código fuente (por ejemplo, un archivo Java.war) en Elastic Beanstalk y proporcionar cierta información sobre la aplicación.
 
 Elastic Beanstalk lanza automáticamente un entorno y crea y configura los recursos de AWS necesarios para ejecutar el código.
+
+
+## Lambda
+
+Nos permite trabajar en entornos Serverless. Es un servicio que nos permite ejecutar código sin aprovisionar ni administrar servidores.
+
+Lambda ejecuta el código en una infraestructura informática de alta disponibilidad y realiza todas las tareas de administración de los recursos informáticos, incluido el mantenimiento del servidor y del sistema operativo, el aprovisionamiento de capacidad y el escalado automático, así como la monitorización del código y las funciones de registro.
+
+Con Lambda se puede ejecutar código para prácticamente cualquier tipo de aplicación o servicio de backend.
+
+Sólo hay que suministrar el código en uno de los lenguajes que admite Lambda. Importante tener claro que está basado en eventos, es decir que el código se ejecuta basado en las respuestas a eventos de otros servicios de Amazon como por ejemplo S3, DynamoDB, peticiones HTTP, etc.
+
+Toda función que queramos usar como punto de entrada siempre será ejecutada por el handler configurado en nuestra función, esta función normalmente recibirá un evento y un contexto. Es importante tener claros los contextos en la documentación del lenguaje que queramos usar en nuestra función Lambda.
