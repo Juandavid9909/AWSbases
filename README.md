@@ -860,3 +860,52 @@ Es una herramienta que nos permite monitorear y comprobar accesos no deseados, s
 | Listar un trail en específico con sus buckets | `aws cloudtrail describe-trails --trail-name-list <nombre-trail> traildata` |
 | Crear un trail | `aws cloudtrail create-trail --name <nombre-trail> --s3-bucket-name <nombre-bucket>` |
 | Eliminar trail | `aws cloudtrail delete-trail --name <nombre-trail>` |
+
+
+# Cloud9
+
+Es un entorno en cloud para desarrollar, ejecutar y testear código. Tiene un IDE incorporado con bastantes cosas premontadas como CLI, SDK, etc.
+
+Podemos crear los entornos que necesitemos dentro de Cloud9, pero es importante tener en cuenta que la recomendación es no utilizar el usuario root para crear entornos. Cuando lo creamos nos pregunta si queremos una EC2 con acceso directo o con acceso vía Systems Manager o SSH, el tipo de instancia, nuestra AMI, el tiempo que queremos que espere Cloud9 para colocar nuestra máquina en modo hibernación automáticamente, el rol de IAM, la VPC que queremos usar y la subred a la que pertenecerá.
+
+Una vez creado, podremos crear nuestros archivos con nuestro código, hacer pruebas, etc. Cloud9 trae plantillas para archivos de texto, JavaScript, HTML, XML, Python, PHP, C, C++, Go, Markdown, Node.js y Java.
+
+Para construir aplicaciones usando nuestros recursos de AWS podemos usar el SDK de Amazon (C++, Go, Java, JavaScript, .NET, Node.js, PHP, Python y Ruby) el cual es un kit de desarrollo para conectarnos a nuestras instancias. Para descargar el SDK que necesitemos tenemos que ir a la página de SDKs de Amazon, seleccionar nuestro lenguaje/framework para descargarlo y configurarlo correctamente en nuestro entorno de desarrollo. A continuación un ejemplo con Python:
+
+Primero instalamos boto3:
+
+```bash
+pip install boto3
+```
+
+Luego ya podremos escribir nuestro código:
+
+```python
+import boto3
+
+s3 = boto3.resource("s3")
+
+# s3.ServiceResource()
+
+# Recorrer todos los buckets e imprimirlos
+for bucket in s3.buckets.all():
+	print(bucket.name)
+
+# Crear bucket
+s3.create_bucket(Bucket = "bucket-prueba", CreateBucketConfiguration = { "LocationConstraint": "us-west-2" })
+
+# Asignar un bucket a una variable
+bucket = s3.Bucket("bucket-prueba")
+
+// Subir un archivo
+bucket.put_object(Key = "fichero", Body = "/home/ec2-user/environment/fichero.txt")
+
+# Imprimir nombre de nuestro archivos en un bucket
+for objeto in s3.Bucket("bucket-prueba").objects.all():
+	print(objeto.key)
+
+# Asignar un objeto de un bucket a una variable
+v1 = s3.Object("bucket-prueba", "fichero")
+print(v1.content_length)
+print(v1.content_type)
+```
