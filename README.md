@@ -804,3 +804,43 @@ vi config.json
 // Ver logs
 cd /var/log/httpd
 ```
+
+
+# IAM - Identity Access Management
+
+Es todo el entorno de seguridad que utiliza AWS para poder acceder y utilizar sus recursos, y hay unos términos que debemos tener en cuenta:
+
+- **Recurso IAM:** Usuarios, grupos, roles, políticas y providers.
+- **Identities:** Identifican accesos: Usuarios, grupos y roles.
+- **Entities:** Objetos que usan para autenticarse: Usuario y rol.
+- **Principal:** Persona o aplicación que asume un usuario o rol.
+
+También hay los distintos tipos de usuario:
+
+- **ROOT:** es el usuario principal con el que se crea la cuenta. Se le denomina "root user". Se puede usar para acceder por consola o a través de código. Es similar al usuario root de Linux. Puede hacer cualquier tipo de operación. No se debería usar para las tareas diarias.
+- **Usuario IAM:** Representan usuarios o aplicaciones que se conectarán y usarán los recursos de AWS. Pueden acceder desde la consola o desde un entorno CLI o SDK. Se les puede asignar distintos tipos de permisos para su trabajo diario.
+- **Grupos:** Colección de usuarios IAM. Permiten agrupar permisos para asignarlos a múltiples usuarios.
+- **Roles:** Se usan para dar permisos y privilegios durante un momento determinado. Cuando un determinado actor asume un rol, se le asigna un token temporal que le permite acceder a ese recurso AWS. Es similar a un usuario IAM pero en vez de estar asociado a una persona, es asumido por quien lo necesita. No tiene credenciales ni claves y por tanto no tienen que ser enviadas o integradas dentro de una aplicación. El servicio que asigna estos Tokens se denomina AWS Security Token Service.
+- **Federación:** Se pueden "federar" usuarios ya creados dentro de nuestro propio entorno. De esta forma se puede asumir unas credenciales temporales para el acceso a AWS.
+- **Políticas y permisos:** Para gestionar el acceso a un usuario o rol a AWS se crean políticas para asignarles. Es un objeto AWS que al ser asignado a un usuario o recursos define sus permisos. Por tanto, identifica qué se puede o no se puede hacer. Suelen estar hechas con un fichero JSON.
+- **Tipos de políticas:** Existen los distintos tipos de políticas:
+	- **Identity policy:** Se asocian a una entidad IAM, como usuarios, grupos o roles. Permite controlar las acciones que se pueden realizar en un recurso y bajo qué condiciones. Pueden ser Managed que son políticas independientes que pueden ser asignadas a múltiples usuarios, grupos o roles, pueden ser creadas por AWS o personalizadas por nosotros, o también Inline que se integran en un usuario, grupo o rol, son las menos adecuadas.
+	- **Resource-Based Policies:** Se asocian a un determinado recurso AWS, como puede ser por ejemplo S3 y determinan las acciones que se pueden hacer sobre ese recurso.
+
+
+## Access Advisor
+
+Nos permite sacar un listado de los recursos a los que puede acceder un usuario, es muy útil por si necesitamos verificar si un usuario tiene acceso por ejemplo a EC2.
+
+
+## Ejemplos con AWS CLI para IAM
+
+| Descripción | Comando |
+|--|--|
+| Listar grupos | `aws iam list-groups` |
+| Listar todas las políticas en AWS | `aws iam list-policies` |
+| Listar políticas locales | `aws iam list-policies --scope Local --query "Policies[].PolicyName"` |
+| Listar usuarios | `aws iam list-users` |
+| Crear política | `aws iam create-policy --policy-name <nombre-politica> --policy-document file://<nuestro-archivo-json>` |
+| Asociar política a un usuario | `aws iam attach-user-policy --user-name <nombre-usuario> --policy-arn <arn-politica>` |
+| Listar políticas asociadas a un usuario | `aws iam list-attached-user-policies --username <nombre-usuario>` |
