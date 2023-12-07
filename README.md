@@ -844,3 +844,19 @@ Nos permite sacar un listado de los recursos a los que puede acceder un usuario,
 | Crear política | `aws iam create-policy --policy-name <nombre-politica> --policy-document file://<nuestro-archivo-json>` |
 | Asociar política a un usuario | `aws iam attach-user-policy --user-name <nombre-usuario> --policy-arn <arn-politica>` |
 | Listar políticas asociadas a un usuario | `aws iam list-attached-user-policies --username <nombre-usuario>` |
+
+
+# Cloudtrail
+
+Es una herramienta que nos permite monitorear y comprobar accesos no deseados, si tenemos alguna anomalía o simplemente poder controlar mejor lo que se hace dentro de nuestra infraestructura. Aquí se registran todas las acciones que hace un usuario, como eliminación o creación de instancias, edición de las mismas, etc.
+
+
+## Ejemplos con AWS CLI para Cloudtrail
+
+| Descripción | Comando |
+|--|--|
+| Listar trails | `aws cloudtrail list-trails` |
+| Listar un trail en específico | `aws cloudtrail describe-trails --trail-name-list <nombre-trail>` |
+| Listar un trail en específico con sus buckets | `aws cloudtrail describe-trails --trail-name-list <nombre-trail> traildata` |
+| Crear un trail | `aws cloudtrail create-trail --name <nombre-trail> --s3-bucket-name <nombre-bucket>` |
+| Eliminar trail | `aws cloudtrail delete-trail --name <nombre-trail>` |
