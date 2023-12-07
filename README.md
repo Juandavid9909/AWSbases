@@ -938,3 +938,5 @@ Es una herramienta que nos permite modelizar y provisionar la infraestructura qu
 Para configurar esta plantilla podemos usar las Stacks de CloudFormation. Cuando se borra un Stack automáticamente CloudFormation borra todos los componentes asociados a la misma, es importante tenerlo en cuenta. Cada Stack tiene una plantilla asociada que es un JSON que contiene toda la información de los recursos que queremos.
 
 Para crear el Stack necesitaremos una plantilla o podemos usar el Designer para crearla al mismo tiempo. AWS nos brinda algunas plantillas base que podemos usar para crear nuestra Stack, y pueden ser Simple o Multi AZ Simple. Si falla nuestra Stack podemos configurar que haga un rollback total (borrado total) o que mantenga los recursos provisionados correctamente.
+
+También tenemos los Drifts que pertenecen a una Stack, y lo que nos permite es detectar si se han cambiado cambias posteriormente a cuando se creó el Stack.
